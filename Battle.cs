@@ -296,9 +296,11 @@ namespace Pokemon
                 secondPokemon.Stats[0] -= firstMoveDamage;
 
                 // display amount of damage done
-                    // TODO: don't display moves that don't do damage
-                System.Threading.Thread.Sleep(1000);
-                Console.WriteLine($"{secondPokemon.PokemonValue.PokemonName} took {firstMoveDamage} damage.");
+                if (firstMoveDamage != 0)
+                {
+                    System.Threading.Thread.Sleep(1000);
+                    Console.WriteLine($"{secondPokemon.PokemonValue.PokemonName} took {firstMoveDamage} damage.");
+                }
 
                 // TODO: enact move effect
                 DoEffect(firstPokemon, secondPokemon, firstEffects, firstMoveDamage, firstPokemonDefaultStats);
@@ -391,9 +393,11 @@ namespace Pokemon
                 firstPokemon.Stats[0] -= secondMoveDamage;
 
                 // display amount of damage done
-                    // TODO: don't display moves that don't do damage
-                System.Threading.Thread.Sleep(1000);
-                Console.WriteLine($"{firstPokemon.PokemonValue.PokemonName} took {secondMoveDamage} damage.");
+                if (secondMoveDamage != 0)
+                {
+                    System.Threading.Thread.Sleep(1000);
+                    Console.WriteLine($"{firstPokemon.PokemonValue.PokemonName} took {secondMoveDamage} damage.");
+                }
 
                 // TODO: enact move effect
                 DoEffect(secondPokemon, firstPokemon, secondEffects, secondMoveDamage, secondPokemonDefaultStats);
@@ -409,6 +413,12 @@ namespace Pokemon
             // display stats with updated stats
             System.Threading.Thread.Sleep(1000);
             DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
+
+            // if a pokemon has fainted, the turn is over
+            if (firstPokemon.Stats[0] <= 0 || secondPokemon.Stats[0] <= 0)
+            {
+                return;
+            }
 
             // do poison status effect for opponent
             foreach (string status in opponentParty[opponentActivePokemon].StatusEffects)
