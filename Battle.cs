@@ -89,6 +89,8 @@ namespace Pokemon
                 // create a string userInput that userInput will be stored into
                 string userInput = "";
 
+                // TODO: recharge
+
                 // prompt user for input until they input a valid action
                     // TODO: other actions (switch pokemon, use item, etc.)
                     // TODO: RECHARGE STATUS EFFECT (FROM HYPER BEAM)
