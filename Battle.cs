@@ -89,8 +89,11 @@ namespace Pokemon
                 // create a string userInput that userInput will be stored into
                 string userInput = "";
 
-                // prompt user for input until they input a valid move
+                // TODO: recharge
+
+                // prompt user for input until they input a valid action
                     // TODO: other actions (switch pokemon, use item, etc.)
+                    // TODO: RECHARGE STATUS EFFECT (FROM HYPER BEAM)
                 while (!match)
                 {
                     userInput = Console.ReadLine().ToUpper();
@@ -114,7 +117,7 @@ namespace Pokemon
                 // display stats again, no longer displaying player moves
                 DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
 
-                // call DoTurn method, carrying out the rest of the turn
+                // call DoMoves method, carrying out the rest of the turn
                     // TODO: this only works with 2 moves
                         // TODO: create new method for other turn actions (switch pokemon, etc.)
                 DoMoves(playerParty, playerActivePokemon, opponentParty, opponentActivePokemon, playerPartyDefaultStats, opponentPartyDefaultStats, playerMove, opponentMove);
@@ -296,9 +299,11 @@ namespace Pokemon
                 secondPokemon.Stats[0] -= firstMoveDamage;
 
                 // display amount of damage done
-                    // TODO: don't display moves that don't do damage
-                System.Threading.Thread.Sleep(1000);
-                Console.WriteLine($"{secondPokemon.PokemonValue.PokemonName} took {firstMoveDamage} damage.");
+                if (firstMoveDamage != 0)
+                {
+                    System.Threading.Thread.Sleep(1000);
+                    Console.WriteLine($"{secondPokemon.PokemonValue.PokemonName} took {firstMoveDamage} damage.");
+                }
 
                 // TODO: enact move effect
                 DoEffect(firstPokemon, secondPokemon, firstEffects, firstMoveDamage, firstPokemonDefaultStats);
@@ -391,9 +396,11 @@ namespace Pokemon
                 firstPokemon.Stats[0] -= secondMoveDamage;
 
                 // display amount of damage done
-                    // TODO: don't display moves that don't do damage
-                System.Threading.Thread.Sleep(1000);
-                Console.WriteLine($"{firstPokemon.PokemonValue.PokemonName} took {secondMoveDamage} damage.");
+                if (secondMoveDamage != 0)
+                {
+                    System.Threading.Thread.Sleep(1000);
+                    Console.WriteLine($"{firstPokemon.PokemonValue.PokemonName} took {secondMoveDamage} damage.");
+                }
 
                 // TODO: enact move effect
                 DoEffect(secondPokemon, firstPokemon, secondEffects, secondMoveDamage, secondPokemonDefaultStats);
@@ -409,6 +416,12 @@ namespace Pokemon
             // display stats with updated stats
             System.Threading.Thread.Sleep(1000);
             DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
+
+            // if a pokemon has fainted, the turn is over
+            if (firstPokemon.Stats[0] <= 0 || secondPokemon.Stats[0] <= 0)
+            {
+                return;
+            }
 
             // do poison status effect for opponent
             foreach (string status in opponentParty[opponentActivePokemon].StatusEffects)
@@ -475,6 +488,8 @@ namespace Pokemon
 
             // create an empty List<string> to be filled by types
             List<string> defenderTypes = new List<string>();
+
+            // fill list with types of the pokemon getting attacked
             for (int i = 0; i < defender.PokemonValue.PokemonTypes.Count; i++)
             {
                 string currentType = defender.PokemonValue.PokemonTypes[i].TypeName;
@@ -521,14 +536,14 @@ namespace Pokemon
                 defense = Convert.ToDouble(defender.Stats[4]);
             }
 
-            // convert Power to an integer
+            // convert Power to a double
             double power = Convert.ToDouble(Convert.ToInt32(attackerMove.Power));
 
             // create Random
             Random rnd = new Random();
 
             // TODO: weather
-            int weather = 1;
+            double weather = 1.0;
 
             // TODO: critical
 
@@ -635,6 +650,15 @@ namespace Pokemon
                         System.Threading.Thread.Sleep(1000);
                         Console.WriteLine($"{defender.PokemonValue.PokemonName}'s accuracy won't go any lower!");
                     }
+                }
+            }
+
+            // selfrecharge
+            foreach (string effect in effects)
+            {
+                if (effect == "selfrecharge")
+                {
+                    attacker.StatusEffects.Add("recharge");
                 }
             }
             
