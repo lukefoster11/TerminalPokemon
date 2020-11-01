@@ -521,6 +521,9 @@ namespace Pokemon
             // poisonpowder
             moveList[289].Tags.Add("opponentpoison", "100");
 
+            // hyper beam
+            moveList[199].Tags.Add("selfrecharge", "100");
+
 
 
             }

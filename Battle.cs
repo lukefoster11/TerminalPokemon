@@ -87,16 +87,17 @@ namespace Pokemon
                 bool match = false;
 
                 // create a string userInput that userInput will be stored into
-                string userInput = "";
+                string userAction = "";
 
-                // prompt user for input until they input a valid move
+                // prompt user for input until they input a valid action
                     // TODO: other actions (switch pokemon, use item, etc.)
+                    // TODO: RECHARGE STATUS EFFECT (FROM HYPER BEAM)
                 while (!match)
                 {
-                    userInput = Console.ReadLine().ToUpper();
+                    userAction = Console.ReadLine().ToUpper();
                     foreach (Move move in playerParty[playerActivePokemon].Moves)
                     {
-                        if (move.MoveName.ToUpper() == userInput && move.PP > 0)
+                        if (move.MoveName.ToUpper() == userAction && move.PP > 0)
                         {
                             move.PP -= 1;
                             match = true;
@@ -104,15 +105,15 @@ namespace Pokemon
                     }
                 }
 
+                // display stats again, no longer displaying player moves
+                DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
+
                 // store the selected move into Move playerMove
-                Move playerMove = playerParty[playerActivePokemon].Moves.Find(x => x.MoveName.ToUpper() == userInput);
+                Move playerMove = playerParty[playerActivePokemon].Moves.Find(x => x.MoveName.ToUpper() == userAction);
 
                 // randomly select a move for the opponent to use and store in Move opponentMove
                     // TODO: add some sort of AI
                 Move opponentMove = opponentParty[opponentActivePokemon].Moves[rnd.Next(opponentParty[opponentActivePokemon].Moves.Count)];
-
-                // display stats again, no longer displaying player moves
-                DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
 
                 // call DoTurn method, carrying out the rest of the turn
                     // TODO: this only works with 2 moves
@@ -485,6 +486,8 @@ namespace Pokemon
 
             // create an empty List<string> to be filled by types
             List<string> defenderTypes = new List<string>();
+
+            // fill list with types of the pokemon getting attacked
             for (int i = 0; i < defender.PokemonValue.PokemonTypes.Count; i++)
             {
                 string currentType = defender.PokemonValue.PokemonTypes[i].TypeName;
@@ -531,14 +534,14 @@ namespace Pokemon
                 defense = Convert.ToDouble(defender.Stats[4]);
             }
 
-            // convert Power to an integer
+            // convert Power to a double
             double power = Convert.ToDouble(Convert.ToInt32(attackerMove.Power));
 
             // create Random
             Random rnd = new Random();
 
             // TODO: weather
-            int weather = 1;
+            double weather = 1.0;
 
             // TODO: critical
 
@@ -645,6 +648,15 @@ namespace Pokemon
                         System.Threading.Thread.Sleep(1000);
                         Console.WriteLine($"{defender.PokemonValue.PokemonName}'s accuracy won't go any lower!");
                     }
+                }
+            }
+
+            // selfrecharge
+            foreach (string effect in effects)
+            {
+                if (effect == "selfrecharge")
+                {
+                    attacker.StatusEffects.Add("recharge");
                 }
             }
             

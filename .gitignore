@@ -19,3 +19,4 @@ obj/Pokemon.csproj.nuget.g.props
 obj/Pokemon.csproj.nuget.g.targets
 obj/project.assets.json
 obj/project.nuget.cache
+bin/Debug/.DS_Store
