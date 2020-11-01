@@ -87,17 +87,17 @@ namespace Pokemon
                 bool match = false;
 
                 // create a string userInput that userInput will be stored into
-                string userAction = "";
+                string userInput = "";
 
                 // prompt user for input until they input a valid action
                     // TODO: other actions (switch pokemon, use item, etc.)
                     // TODO: RECHARGE STATUS EFFECT (FROM HYPER BEAM)
                 while (!match)
                 {
-                    userAction = Console.ReadLine().ToUpper();
+                    userInput = Console.ReadLine().ToUpper();
                     foreach (Move move in playerParty[playerActivePokemon].Moves)
                     {
-                        if (move.MoveName.ToUpper() == userAction && move.PP > 0)
+                        if (move.MoveName.ToUpper() == userInput && move.PP > 0)
                         {
                             move.PP -= 1;
                             match = true;
@@ -105,17 +105,17 @@ namespace Pokemon
                     }
                 }
 
-                // display stats again, no longer displaying player moves
-                DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
-
                 // store the selected move into Move playerMove
-                Move playerMove = playerParty[playerActivePokemon].Moves.Find(x => x.MoveName.ToUpper() == userAction);
+                Move playerMove = playerParty[playerActivePokemon].Moves.Find(x => x.MoveName.ToUpper() == userInput);
 
                 // randomly select a move for the opponent to use and store in Move opponentMove
                     // TODO: add some sort of AI
                 Move opponentMove = opponentParty[opponentActivePokemon].Moves[rnd.Next(opponentParty[opponentActivePokemon].Moves.Count)];
 
-                // call DoTurn method, carrying out the rest of the turn
+                // display stats again, no longer displaying player moves
+                DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
+
+                // call DoMoves method, carrying out the rest of the turn
                     // TODO: this only works with 2 moves
                         // TODO: create new method for other turn actions (switch pokemon, etc.)
                 DoMoves(playerParty, playerActivePokemon, opponentParty, opponentActivePokemon, playerPartyDefaultStats, opponentPartyDefaultStats, playerMove, opponentMove);
