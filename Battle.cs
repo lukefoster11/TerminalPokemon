@@ -79,63 +79,26 @@ namespace Pokemon
 
             // create a loop that continues as long as battle is going
             while (true)
-            {
+            {   
                 // display moves for player's pokemon
                 DisplayMoves(playerParty[playerActivePokemon]);
 
-                // create a bool that becomes true when user inputs a correct move
-                bool match = false;
+                // carry out each turn of the battle
+                DoTurn(playerParty, playerActivePokemon, playerPartyDefaultStats, opponentParty, opponentActivePokemon, opponentPartyDefaultStats);
 
-                // create a string userInput that userInput will be stored into
-                string userInput = "";
-
-                // TODO: recharge
-
-                // prompt user for input until they input a valid action
-                    // TODO: other actions (switch pokemon, use item, etc.)
-                    // TODO: RECHARGE STATUS EFFECT (FROM HYPER BEAM)
-                while (!match)
-                {
-                    userInput = Console.ReadLine().ToUpper();
-                    foreach (Move move in playerParty[playerActivePokemon].Moves)
-                    {
-                        if (move.MoveName.ToUpper() == userInput && move.PP > 0)
-                        {
-                            move.PP -= 1;
-                            match = true;
-                        }
-                    }
-                }
-
-                // store the selected move into Move playerMove
-                Move playerMove = playerParty[playerActivePokemon].Moves.Find(x => x.MoveName.ToUpper() == userInput);
-
-                // randomly select a move for the opponent to use and store in Move opponentMove
-                    // TODO: add some sort of AI
-                Move opponentMove = opponentParty[opponentActivePokemon].Moves[rnd.Next(opponentParty[opponentActivePokemon].Moves.Count)];
-
-                // display stats again, no longer displaying player moves
-                DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
-
-                // call DoMoves method, carrying out the rest of the turn
-                    // TODO: this only works with 2 moves
-                        // TODO: create new method for other turn actions (switch pokemon, etc.)
-                DoMoves(playerParty, playerActivePokemon, opponentParty, opponentActivePokemon, playerPartyDefaultStats, opponentPartyDefaultStats, playerMove, opponentMove);
-                
                 // check if either pokemon fainted
                 if (opponentParty[opponentActivePokemon].Stats[0] <= 0)
                 {
-                    System.Threading.Thread.Sleep(1000);
                     Console.WriteLine($"The opposing {opponentParty[opponentActivePokemon].PokemonValue.PokemonName} fainted.");
+                    System.Threading.Thread.Sleep(1000);
                 }
                 if (playerParty[playerActivePokemon].Stats[0] <= 0)
                 {
-                    System.Threading.Thread.Sleep(1000);
                     Console.WriteLine($"Your {playerParty[playerActivePokemon].PokemonValue.PokemonName} fainted.");
+                    System.Threading.Thread.Sleep(1000);
                 }
                 if (opponentParty[opponentActivePokemon].Stats[0] <= 0 || playerParty[playerActivePokemon].Stats[0] <= 0)
                 {
-                    System.Threading.Thread.Sleep(1000);
                     break;
                 }
             }
@@ -152,6 +115,239 @@ namespace Pokemon
             {
                 pokemon.StatusEffects.Clear();
             }
+        }
+
+        // go through the sequence of actions for the move, calling appropriate methods
+        public static void DoTurn(List<PokemonInstance> playerParty, int playerActivePokemon, List<List<int>> playerPartyDefaultStats, List<PokemonInstance> opponentParty, int opponentActivePokemon, List<List<int>> opponentPartyDefaultStats)
+        {
+            Random rnd = new Random();
+
+            // prompt user for input until they input a valid action
+                // create a bool that becomes true when user inputs a correct move
+            bool match = false;
+
+            // create a string userInput that user input will be stored into and userAction that the action type will be stored into
+            string userInput = "";
+            string playerAction = "";
+            string opponentAction = "";
+
+            // skip player's turn if they need to recharge
+            if (playerParty[playerActivePokemon].StatusEffects.Contains("recharge"))
+            {
+                playerAction = "recharge";
+                match = true;
+            }
+
+            // wait for user to input valid action, and store it into userInput
+            while (!match)
+            {
+                userInput = Console.ReadLine().ToUpper();
+                foreach (Move move in playerParty[playerActivePokemon].Moves)
+                {
+                    if (move.MoveName.ToUpper() == userInput && move.PP > 0)
+                    {
+                        move.PP -= 1;
+                        playerAction = "move";
+                        match = true;
+                    }
+                }
+            }
+
+            // make AI randomly choose an action
+                // TODO: add more actions than just moves
+            Move opponentMove = opponentParty[opponentActivePokemon].Moves[rnd.Next(opponentParty[opponentActivePokemon].Moves.Count)];
+            opponentAction = "move";
+
+            // skip opponent's turn in they need to recharge
+            if (opponentParty[opponentActivePokemon].StatusEffects.Contains("recharge"))
+            {
+                opponentAction = "recharge";
+            }
+
+            // display stats before the first action
+            DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
+            System.Threading.Thread.Sleep(1000);
+
+            // player uses item
+            if (playerAction == "item")
+            {
+                // TODO: DoItem method
+            }
+            
+            // player switches out pokemon
+            if (playerAction == "switch")
+            {
+                // TODO: DoSwitch method
+            }
+
+            // player needs to recharge
+            if (playerAction == "recharge")
+            {
+                Console.WriteLine($"{playerParty[playerActivePokemon].PokemonValue.PokemonName} needs to recharge!");
+                playerParty[playerActivePokemon].StatusEffects.Remove("recharge");
+                System.Threading.Thread.Sleep(1000);
+                DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
+                System.Threading.Thread.Sleep(1000); 
+            }
+
+            // opponent needs to recharge
+            if (opponentAction == "recharge")
+            {
+                Console.WriteLine($"{opponentParty[opponentActivePokemon].PokemonValue.PokemonName} needs to recharge!");
+                opponentParty[opponentActivePokemon].StatusEffects.Remove("recharge");
+                System.Threading.Thread.Sleep(1000);
+                DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
+                System.Threading.Thread.Sleep(1000);
+            }
+            
+            // opponent uses item
+            if (opponentAction == "item")
+            {
+                // TODO: DoItem method
+            }
+
+            // opponent switches out pokemon
+            if (opponentAction == "switch")
+            {
+                // TODO: DoSwitch method
+            }
+
+            // player uses move (opponent may or may not also use move)
+            if (playerAction == "move")
+            {
+                // store the selected move in playerMove
+                Move playerMove = playerParty[playerActivePokemon].Moves.Find(x => x.MoveName.ToUpper() == userInput);
+
+                // only player uses move
+                if (opponentAction != "move")
+                {
+                    // carry out the player's move
+                    DoMove(playerParty, playerActivePokemon, opponentParty, opponentActivePokemon, playerPartyDefaultStats, opponentPartyDefaultStats, playerMove, playerParty, opponentParty, playerActivePokemon, opponentActivePokemon, playerPartyDefaultStats, opponentPartyDefaultStats);
+                    
+                    // display stats after move
+                    DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
+                    System.Threading.Thread.Sleep(1000);
+
+                    // check if either pokemon fainted after turn two
+                    if (playerParty[playerActivePokemon].Stats[0] <= 0 || opponentParty[opponentActivePokemon].Stats[0] <= 0)
+                    {
+                        return;
+                    }
+                }
+
+                // opponent also uses move
+                if (opponentAction == "move")
+                {
+                    // order moves
+                        // by default player goes first
+                    List<PokemonInstance> firstParty = playerParty;
+                    int firstPartyActivePokemon = playerActivePokemon;
+                    List<List<int>> firstPartyDefaultStats = playerPartyDefaultStats;
+                    Move firstMove = playerMove;
+                    List<PokemonInstance> secondParty = opponentParty;
+                    int secondPartyActivePokemon = opponentActivePokemon;
+                    List<List<int>> secondPartyDefaultStats = opponentPartyDefaultStats;
+                    Move secondMove = opponentMove;
+
+                    // if opponent goes first
+                    if (playerParty[playerActivePokemon].Stats[5] < opponentParty[opponentActivePokemon].Stats[5])
+                    {
+                        // opponent goes first
+                        firstParty = opponentParty;
+                        firstPartyActivePokemon = opponentActivePokemon;
+                        firstPartyDefaultStats = opponentPartyDefaultStats;
+                        firstMove = opponentMove;
+
+                        // player goes second
+                        secondParty = playerParty;
+                        secondPartyActivePokemon = playerActivePokemon;
+                        secondPartyDefaultStats = playerPartyDefaultStats;
+                        secondMove = playerMove;
+                    }
+
+                    // carry out the first move
+                    DoMove(firstParty, firstPartyActivePokemon, secondParty, secondPartyActivePokemon, firstPartyDefaultStats, secondPartyDefaultStats, firstMove, playerParty, opponentParty, playerActivePokemon, opponentActivePokemon, playerPartyDefaultStats, opponentPartyDefaultStats);
+
+                    // display stats after move one
+                    DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
+                    System.Threading.Thread.Sleep(1000);
+
+                    // check if either pokemon fainted after turn one
+                    if (playerParty[playerActivePokemon].Stats[0] <= 0 || opponentParty[opponentActivePokemon].Stats[0] <= 0)
+                    {
+                        return;
+                    }
+                    
+                    // carry out the second move
+                    DoMove(secondParty, secondPartyActivePokemon, firstParty, firstPartyActivePokemon, secondPartyDefaultStats, firstPartyDefaultStats, secondMove, playerParty, opponentParty, playerActivePokemon, opponentActivePokemon, playerPartyDefaultStats, opponentPartyDefaultStats);
+
+                    // display stats after move two
+                    DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
+                    System.Threading.Thread.Sleep(1000);
+
+                    // check if either pokemon fainted after turn two
+                    if (playerParty[playerActivePokemon].Stats[0] <= 0 || opponentParty[opponentActivePokemon].Stats[0] <= 0)
+                    {
+                        return;
+                    }
+                }
+            }
+
+            // opponent uses move but player does not
+            if (playerAction != "move" && opponentAction == "move")
+            {
+                // carry out opponent's move
+                DoMove(opponentParty, opponentActivePokemon, playerParty, playerActivePokemon, opponentPartyDefaultStats, playerPartyDefaultStats, opponentMove, playerParty, opponentParty, playerActivePokemon, opponentActivePokemon, playerPartyDefaultStats, opponentPartyDefaultStats);
+
+                // display stats after move
+                DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
+                System.Threading.Thread.Sleep(1000);
+
+                // check if either pokemon fainted after turn two
+                if (playerParty[playerActivePokemon].Stats[0] <= 0 || opponentParty[opponentActivePokemon].Stats[0] <= 0)
+                {
+                    return;
+                }
+            }
+            
+            // do poison status effect for opponent
+            foreach (string status in opponentParty[opponentActivePokemon].StatusEffects)
+            {
+                if (status == "poison")
+                {
+                    int damage = opponentPartyDefaultStats[opponentActivePokemon][0] / 16;
+                    opponentParty[opponentActivePokemon].Stats[0] -= damage;
+                    if (opponentParty[opponentActivePokemon].Stats[0] < 0)
+                    {
+                        opponentParty[opponentActivePokemon].Stats[0] = 0;
+                    }
+                    Console.WriteLine($"{opponentParty[opponentActivePokemon].PokemonValue.PokemonName} was hurt by poison.");
+                    System.Threading.Thread.Sleep(1000);
+                    DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
+                    System.Threading.Thread.Sleep(1000);
+                }
+            }
+
+            // do poison status effect for player
+            foreach (string status in playerParty[playerActivePokemon].StatusEffects)
+            {
+                if (status == "poison")
+                {
+                    int damage = playerPartyDefaultStats[playerActivePokemon][0] / 16;
+                    playerParty[playerActivePokemon].Stats[0] -= damage;
+                    if (playerParty[playerActivePokemon].Stats[0] < 0)
+                    {
+                        playerParty[playerActivePokemon].Stats[0] = 0;
+                    }
+                    Console.WriteLine($"{playerParty[playerActivePokemon].PokemonValue.PokemonName} was hurt by poison.");
+                    System.Threading.Thread.Sleep(1000);
+                    DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
+                    System.Threading.Thread.Sleep(1000);
+                }
+            }
+
+            // TODO: end turn actions (poison etc.)
+
         }
     
         // generate a PokemonInstance given a specific pokemon, level, and movelist
@@ -218,32 +414,26 @@ namespace Pokemon
                 Console.WriteLine("");
             }
         }
-        
-        // carry out the rest of the turn
-        public static void DoMoves(List<PokemonInstance> playerParty, int playerActivePokemon, List<PokemonInstance> opponentParty, int opponentActivePokemon, List<List<int>> playerPartyDefaultStats, List<List<int>> opponentPartyDefaultStats, Move playerMove, Move opponentMove)
-        {
-            // recalculate stats before each move using StatModifiers
-            playerParty[playerActivePokemon].Stats = CalculateStats(playerParty[playerActivePokemon], playerPartyDefaultStats[playerActivePokemon]);
-            opponentParty[opponentActivePokemon].Stats = CalculateStats(opponentParty[opponentActivePokemon], opponentPartyDefaultStats[opponentActivePokemon]);
 
-            // determine which move goes first
-            OrderMoves(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerMove, opponentMove, playerPartyDefaultStats[playerActivePokemon], opponentPartyDefaultStats[opponentActivePokemon], out PokemonInstance firstPokemon, out PokemonInstance secondPokemon, out Move firstMove, out Move secondMove, out List<int> firstPokemonDefaultStats, out List<int> secondPokemonDefaultStats);
-            
-            // FIRST MOVE:
-                // TODO: move effects
-            
-            // create empty lists that will be filled with move effects
-            List<string> firstEffects = new List<string>();
+        // carry out a single move
+        public static void DoMove(List<PokemonInstance> attackerParty, int attackerActivePokemon, List<PokemonInstance> defenderParty, int defenderActivePokemon, List<List<int>> attackerPartyDefaultStats, List<List<int>> defenderPartyDefaultStats, Move attackerMove, List<PokemonInstance> playerParty, List<PokemonInstance> opponentParty, int playerActivePokemon, int opponentActivePokemon, List<List<int>> playerPartyDefaultStats, List<List<int>> opponentPartyDefaultStats)
+        {
+            // recalculate stats before move using StatModifiers
+            attackerParty[attackerActivePokemon].Stats = CalculateStats(attackerParty[attackerActivePokemon], attackerPartyDefaultStats[attackerActivePokemon]);
+            defenderParty[defenderActivePokemon].Stats = CalculateStats(defenderParty[defenderActivePokemon], defenderPartyDefaultStats[defenderActivePokemon]);
+
+            // create empty list that will be filled with move effects
+            List<string> moveEffects = new List<string>();
 
             // check for move tags
                 // check if condition is met
-            foreach (KeyValuePair<string, string> tag in firstMove.Tags)
+            foreach (KeyValuePair<string, string> tag in attackerMove.Tags)
             {
                 // if condition is numerical, check if it will occur
                 if (Int32.TryParse(tag.Value, out int chance) && new Random().Next(1, 101) <= chance)
                 {
                     // if it occurs, save it to the list of effects
-                    firstEffects.Add(tag.Key);
+                    moveEffects.Add(tag.Key);
                 }
                 // TODO: other conditions
             }
@@ -255,11 +445,11 @@ namespace Pokemon
             int moveAccuracy = 100;
             
             // check if the move is missable, and if so, store move accuracy in int accuracy
-            bool isMissable = Int32.TryParse(firstMove.Accuracy, out moveAccuracy);
+            bool isMissable = Int32.TryParse(attackerMove.Accuracy, out moveAccuracy);
 
             // calculate final accuracy given pokemon stats
-            double accuracy = Convert.ToDouble(firstPokemon.Stats[6]) / 100.0;
-            double evasion = Convert.ToDouble(secondPokemon.Stats[7]) / 100.0;
+            double accuracy = Convert.ToDouble(attackerParty[attackerActivePokemon].Stats[6]) / 100.0;
+            double evasion = Convert.ToDouble(defenderParty[defenderActivePokemon].Stats[7]) / 100.0;
             int finalAccuracy = Convert.ToInt32(Math.Round(moveAccuracy * accuracy / evasion));
 
             if (finalAccuracy > 100)
@@ -273,15 +463,15 @@ namespace Pokemon
                 miss = true;
             }
 
-            // display that the move has been performed
+             // display that the move has been performed
+            Console.WriteLine($"{attackerParty[attackerActivePokemon].PokemonValue.PokemonName} used {attackerMove.MoveName}.");
             System.Threading.Thread.Sleep(1000);
-            Console.WriteLine($"{firstPokemon.PokemonValue.PokemonName} used {firstMove.MoveName}.");
 
             // display move missing
             if (miss)
             {
+                Console.WriteLine($"{attackerParty[attackerActivePokemon].PokemonValue.PokemonName} missed.");
                 System.Threading.Thread.Sleep(1000);
-                Console.WriteLine($"{firstPokemon.PokemonValue.PokemonName} missed.");
             }
 
             // finish move if it doesn't miss
@@ -289,194 +479,54 @@ namespace Pokemon
             {
                 // calculate first move damage
                     // TODO: atypical attack damage
-                int firstMoveDamage = CalculateDamage(firstPokemon, secondPokemon, firstMove, out double firstEffectiveness);
-                    if (firstMoveDamage > secondPokemon.Stats[0])
+                int firstMoveDamage = CalculateDamage(attackerParty[attackerActivePokemon], defenderParty[defenderActivePokemon], attackerMove, out double firstEffectiveness);
+                    if (firstMoveDamage > defenderParty[defenderActivePokemon].Stats[0])
                     {
-                        firstMoveDamage = secondPokemon.Stats[0];
+                        firstMoveDamage = defenderParty[defenderActivePokemon].Stats[0];
                     }
 
                 // change pokemon HP
-                secondPokemon.Stats[0] -= firstMoveDamage;
+                defenderParty[defenderActivePokemon].Stats[0] -= firstMoveDamage;
 
                 // display amount of damage done
                 if (firstMoveDamage != 0)
                 {
+                    Console.WriteLine($"{defenderParty[defenderActivePokemon].PokemonValue.PokemonName} took {firstMoveDamage} damage.");
                     System.Threading.Thread.Sleep(1000);
-                    Console.WriteLine($"{secondPokemon.PokemonValue.PokemonName} took {firstMoveDamage} damage.");
                 }
 
                 // TODO: enact move effect
-                DoEffect(firstPokemon, secondPokemon, firstEffects, firstMoveDamage, firstPokemonDefaultStats);
+                DoEffect(attackerParty[attackerActivePokemon], defenderParty[defenderActivePokemon], moveEffects, firstMoveDamage, attackerPartyDefaultStats[attackerActivePokemon]);
 
                 // display first move effectiveness
-                DisplayEffectiveness(firstEffectiveness, firstMoveDamage);
+                if (firstMoveDamage != 0)
+                {
+                    DisplayEffectiveness(firstEffectiveness, firstMoveDamage);
+                }
             }
 
             // recalculate stats before each move using StatModifiers
-            playerParty[playerActivePokemon].Stats = CalculateStats(playerParty[playerActivePokemon], playerPartyDefaultStats[playerActivePokemon]);
-            opponentParty[opponentActivePokemon].Stats = CalculateStats(opponentParty[opponentActivePokemon], opponentPartyDefaultStats[opponentActivePokemon]);
-
-            // reload stats with updated stats
-            System.Threading.Thread.Sleep(1000);
-            DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
-
-            // if a pokemon has fainted, the turn is over
-            if (firstPokemon.Stats[0] <= 0 || secondPokemon.Stats[0] <= 0)
-            {
-                return;
-            }
-
-            // SECOND MOVE:
-                // TODO: move effects
-
-            // create empty lists that will be filled with move effects
-            List<string> secondEffects = new List<string>();
-
-            // check for move tags
-                // check if condition is met
-            foreach (KeyValuePair<string, string> tag in secondMove.Tags)
-            {
-                // if condition is numerical, check if it will occur
-                if (Int32.TryParse(tag.Value, out int chance) && new Random().Next(1, 101) <= chance)
-                {
-                    // if it occurs, save it to the list of effects
-                    secondEffects.Add(tag.Key);
-                }
-                // TODO: other conditions
-            }
-
-            // by default, the move doesn't miss
-            miss = false;
-            
-            // by default, accuracy move accuracy is 100
-            moveAccuracy = 100;
-            
-            // check if the move is missable, and if so, store move accuracy in int accuracy
-            isMissable = Int32.TryParse(secondMove.Accuracy, out moveAccuracy);
-
-            // calculate final accuracy given pokemon stats
-            accuracy = Convert.ToDouble(secondPokemon.Stats[6]) / 100.0;
-            evasion = Convert.ToDouble(firstPokemon.Stats[7]) / 100.0;
-            finalAccuracy = Convert.ToInt32(Math.Round(moveAccuracy * accuracy / evasion));
-
-            if (finalAccuracy > 100)
-            {
-                finalAccuracy = 100;
-            }
-
-            // determine whether attack misses
-            if (new Random().Next(1, 101) > finalAccuracy)
-            {
-                miss = true;
-            }
-
-            // display that the move has been performed
-            System.Threading.Thread.Sleep(1000);
-            Console.WriteLine($"{secondPokemon.PokemonValue.PokemonName} used {secondMove.MoveName}.");
-
-            // display move missing
-            if (miss)
-            {
-                System.Threading.Thread.Sleep(1000);
-                Console.WriteLine($"{secondPokemon.PokemonValue.PokemonName} missed.");
-            }
-
-            // finish move if it doesn't miss
-            if (!miss)
-            {
-                // calculate second move damage
-                    // TODO: atypical attack damage
-                int secondMoveDamage = CalculateDamage(secondPokemon, firstPokemon, secondMove, out double secondEffectiveness);
-                if (secondMoveDamage > firstPokemon.Stats[0])
-                    {
-                        secondMoveDamage = firstPokemon.Stats[0];
-                    }
-
-                // change pokemon HP
-                firstPokemon.Stats[0] -= secondMoveDamage;
-
-                // display amount of damage done
-                if (secondMoveDamage != 0)
-                {
-                    System.Threading.Thread.Sleep(1000);
-                    Console.WriteLine($"{firstPokemon.PokemonValue.PokemonName} took {secondMoveDamage} damage.");
-                }
-
-                // TODO: enact move effect
-                DoEffect(secondPokemon, firstPokemon, secondEffects, secondMoveDamage, secondPokemonDefaultStats);
-
-                // display second move effectiveness
-                DisplayEffectiveness(secondEffectiveness, secondMoveDamage);
-            }
-
-            // recalculate stats before each move using StatModifiers
-            playerParty[playerActivePokemon].Stats = CalculateStats(playerParty[playerActivePokemon], playerPartyDefaultStats[playerActivePokemon]);
-            opponentParty[opponentActivePokemon].Stats = CalculateStats(opponentParty[opponentActivePokemon], opponentPartyDefaultStats[opponentActivePokemon]);
-
-            // display stats with updated stats
-            System.Threading.Thread.Sleep(1000);
-            DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
-
-            // if a pokemon has fainted, the turn is over
-            if (firstPokemon.Stats[0] <= 0 || secondPokemon.Stats[0] <= 0)
-            {
-                return;
-            }
-
-            // do poison status effect for opponent
-            foreach (string status in opponentParty[opponentActivePokemon].StatusEffects)
-            {
-                if (status == "poison")
-                {
-                    int damage = opponentPartyDefaultStats[opponentActivePokemon][0] / 16;
-                    opponentParty[opponentActivePokemon].Stats[0] -= damage;
-                    if (opponentParty[opponentActivePokemon].Stats[0] < 0)
-                    {
-                        opponentParty[opponentActivePokemon].Stats[0] = 0;
-                    }
-                    System.Threading.Thread.Sleep(1000);
-                    Console.WriteLine($"{opponentParty[opponentActivePokemon].PokemonValue.PokemonName} was hurt by poison.");
-                    System.Threading.Thread.Sleep(1000);
-                    DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
-                }
-            }
-
-            // do poison status effect for player
-            foreach (string status in playerParty[playerActivePokemon].StatusEffects)
-            {
-                if (status == "poison")
-                {
-                    int damage = playerPartyDefaultStats[playerActivePokemon][0] / 16;
-                    playerParty[playerActivePokemon].Stats[0] -= damage;
-                    if (playerParty[playerActivePokemon].Stats[0] < 0)
-                    {
-                        playerParty[playerActivePokemon].Stats[0] = 0;
-                    }
-                    System.Threading.Thread.Sleep(1000);
-                    Console.WriteLine($"{playerParty[playerActivePokemon].PokemonValue.PokemonName} was hurt by poison.");
-                    System.Threading.Thread.Sleep(1000);
-                    DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
-                }
-            }
+            attackerParty[attackerActivePokemon].Stats = CalculateStats(attackerParty[attackerActivePokemon], attackerPartyDefaultStats[attackerActivePokemon]);
+            defenderParty[defenderActivePokemon].Stats = CalculateStats(defenderParty[defenderActivePokemon], defenderPartyDefaultStats[defenderActivePokemon]);
         }
-
+        
         // display a move's effectiveness
         public static void DisplayEffectiveness(double effectiveness, int damage)
         {
             if (effectiveness > 1.0 && damage != 0)
                 {
-                    System.Threading.Thread.Sleep(1000);
                     Console.WriteLine("Super effective!");
+                    System.Threading.Thread.Sleep(1000);
                 }
                 if (effectiveness < 1.0 && damage != 0)
                 {
-                    System.Threading.Thread.Sleep(1000);
                     Console.WriteLine("Not very effective.");
+                    System.Threading.Thread.Sleep(1000);
                 }
                 if (effectiveness == 0)
                 {
-                    System.Threading.Thread.Sleep(1000);
                     Console.WriteLine($"No effect.");
+                    System.Threading.Thread.Sleep(1000);
                 }
         }
 
@@ -565,30 +615,6 @@ namespace Pokemon
             return Convert.ToInt32(Math.Round(damage));
         }
     
-        // check the order that moves go in
-        public static void OrderMoves(PokemonInstance player, PokemonInstance opponent, Move playerMove, Move opponentMove, List<int> playerDefaultStats, List<int> opponentDefaultStats, out PokemonInstance firstPokemon, out PokemonInstance secondPokemon, out Move firstMove, out Move secondMove, out List<int> firstPokemonDefaultStats, out List<int> secondPokemonDefaultStats)
-        {
-            // TODO: exceptions (quick attack, etc.)
-            if (player.Stats[5] < opponent.Stats[5])
-            {
-                firstPokemon = opponent;
-                secondPokemon = player;
-                firstMove = opponentMove;
-                secondMove = playerMove;
-                firstPokemonDefaultStats = opponentDefaultStats;
-                secondPokemonDefaultStats = playerDefaultStats;
-            }
-            else
-            {
-                firstPokemon = player;
-                secondPokemon = opponent;
-                firstMove = playerMove;
-                secondMove = opponentMove;
-                firstPokemonDefaultStats = playerDefaultStats;
-                secondPokemonDefaultStats = opponentDefaultStats;
-            }
-        }
-    
         // check for move tags
         public static void DoEffect(PokemonInstance attacker, PokemonInstance defender, List<string> effects, int damage, List<int> attackerDefaultStats)
         {
@@ -603,8 +629,8 @@ namespace Pokemon
                         heal = attackerDefaultStats[0] - attacker.Stats[0];
                     }
                     attacker.Stats[0] += heal;
-                    System.Threading.Thread.Sleep(1000);
                     Console.WriteLine($"{attacker.PokemonValue.PokemonName} stole some of {defender.PokemonValue.PokemonName}'s HP.");
+                    System.Threading.Thread.Sleep(1000);
                 }
             }
 
@@ -622,14 +648,14 @@ namespace Pokemon
                     }
                     if (alreadyPoisoned)
                     {
-                        System.Threading.Thread.Sleep(1000);
                         Console.WriteLine($"{defender.PokemonValue.PokemonName} is already poisoned.");
+                        System.Threading.Thread.Sleep(1000);
                     }
                     else
                     {
                         defender.StatusEffects.Add("poison");
-                        System.Threading.Thread.Sleep(1000);
                         Console.WriteLine($"{defender.PokemonValue.PokemonName} was poisoned.");
+                        System.Threading.Thread.Sleep(1000);
                     }
                 }
             }
@@ -642,13 +668,13 @@ namespace Pokemon
                     if (defender.StatStages[6] > -6)
                     {
                         defender.StatStages[6] -= 1;
-                        System.Threading.Thread.Sleep(1000);
                         Console.WriteLine($"{defender.PokemonValue.PokemonName}'s accuracy fell!");
+                        System.Threading.Thread.Sleep(1000);
                     }
                     else
                     {
-                        System.Threading.Thread.Sleep(1000);
                         Console.WriteLine($"{defender.PokemonValue.PokemonName}'s accuracy won't go any lower!");
+                        System.Threading.Thread.Sleep(1000);
                     }
                 }
             }
