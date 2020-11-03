@@ -524,6 +524,12 @@ namespace Pokemon
             // hyper beam
             moveList[199].Tags.Add("selfrecharge", "100");
 
+            // double-edge
+            moveList[167].Tags.Add("selfthirddamage", "100");
+
+            // fly
+            moveList[83].Tags.Add("fly", "100");
+
 
 
             }
