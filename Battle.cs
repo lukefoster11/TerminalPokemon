@@ -138,6 +138,14 @@ namespace Pokemon
                 match = true;
             }
 
+            // finish player's move if they are flying
+            if (playerParty[playerActivePokemon].StatusEffects.Contains("flying"))
+            {
+                playerAction = "move";
+                userInput = "FLY";
+                match = true;
+            }
+
             // wait for user to input valid action, and store it into userInput
             while (!match)
             {
@@ -189,7 +197,7 @@ namespace Pokemon
                 DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
                 System.Threading.Thread.Sleep(1000); 
             }
-
+            
             // opponent needs to recharge
             if (opponentAction == "recharge")
             {
@@ -198,6 +206,13 @@ namespace Pokemon
                 System.Threading.Thread.Sleep(1000);
                 DisplayStats(playerParty[playerActivePokemon], opponentParty[opponentActivePokemon], playerPartyDefaultStats[playerActivePokemon][0], opponentPartyDefaultStats[opponentActivePokemon][0]);
                 System.Threading.Thread.Sleep(1000);
+            }
+            
+            // finish opponent's move if they are flying
+            if (opponentParty[opponentActivePokemon].StatusEffects.Contains("flying"))
+            {
+                opponentMove = Dex.MoveDex[83];
+                opponentAction = "move";
             }
             
             // opponent uses item
@@ -438,6 +453,25 @@ namespace Pokemon
                 // TODO: other conditions
             }
 
+            // Move Fly exception
+            if (attackerMove.MoveName == "Fly" && attackerParty[attackerActivePokemon].StatusEffects.Contains("flying") == false)
+            {
+                // add status effect "fly" to pokemon
+                Console.WriteLine($"{attackerParty[attackerActivePokemon].PokemonValue.PokemonName} used Fly.");
+                System.Threading.Thread.Sleep(1000);
+                Console.WriteLine($"{attackerParty[attackerActivePokemon].PokemonValue.PokemonName} took flight!");
+                attackerParty[attackerActivePokemon].StatusEffects.Add("flying");
+                System.Threading.Thread.Sleep(1000);
+                
+                // end turn
+                return;
+            }
+            if (attackerMove.MoveName == "Fly" && attackerParty[attackerActivePokemon].StatusEffects.Contains("flying"))
+            {
+                // remove "flying" status effect
+                attackerParty[attackerActivePokemon].StatusEffects.Remove("flying");
+            }
+
             // by default, the move doesn't miss
             bool miss = false;
             
@@ -458,7 +492,7 @@ namespace Pokemon
             }
 
             // determine whether attack misses
-            if (new Random().Next(1, 101) > finalAccuracy)
+            if (new Random().Next(1, 101) > finalAccuracy || defenderParty[defenderActivePokemon].StatusEffects.Contains("flying"))
             {
                 miss = true;
             }
@@ -688,6 +722,22 @@ namespace Pokemon
                 }
             }
             
+            // selfthirddamage
+            foreach (string effect in effects)
+            {
+                if (effect == "selfthirddamage")
+                {
+                    int owndamage = damage / 3;
+                    if (owndamage > attacker.Stats[0])
+                    {
+                        owndamage = attacker.Stats[0];
+                    }
+                    attacker.Stats[0] -= owndamage;
+                    Console.WriteLine($"{attacker.PokemonValue.PokemonName} was hurt by recoil!");
+                    System.Threading.Thread.Sleep(1000);
+                }
+            }
+
             // TODO: Other tags
         }
     
